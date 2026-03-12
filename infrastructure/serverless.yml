@@ -1,0 +1,29 @@
+service: order-system
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+
+functions:
+
+  createOrder:
+    handler: src/order_creator_lambda/app.lambda_handler
+    events:
+      - http:
+          path: orders
+          method: post
+
+  processOrder:
+    handler: src/order_processor_lambda/app.lambda_handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - OrderProcessingQueue
+              - Arn
+
+  notify:
+    handler: src/notification_service_lambda/app.lambda_handler
+    events:
+      - sns: OrderStatusNotifications
